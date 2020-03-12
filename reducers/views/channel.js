@@ -133,7 +133,7 @@ function readStatus(state = {}, action) {
                 ...state,
                 [action.channelId]: action.readStatus,
             };
-        } else if (action.user_id) {
+        } else if (action.user_id && state[action.channelId]) {
             return {
                 ...state,
                 [action.channelId]: state[action.channelId].map(

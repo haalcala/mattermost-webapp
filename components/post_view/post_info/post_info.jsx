@@ -396,8 +396,8 @@ export default class PostInfo extends React.PureComponent {
             >
                 <div className='col'>
                     {postTime}
-                    {this.props.showTimeWithoutHover &&
-                        <button className='read-status' onClick={showReadStatusModal}>{readStatus ? readStatus.length : 0} read</button>
+                    {this.props.showTimeWithoutHover && readStatus &&
+                        <button className='read-status' onClick={showReadStatusModal}>{readStatus.length} read</button>
                     }
                     {pinnedBadge}
                     {postInfoIcon}

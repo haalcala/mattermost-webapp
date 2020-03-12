@@ -35,8 +35,8 @@ function mapStateToProps(state, ownProps) {
         isCardOpen: selectedCard && selectedCard.id === ownProps.post.id,
         enableEmojiPicker,
         isReadOnly: isCurrentChannelReadOnly(state) || channelIsArchived,
-        readStatus: state.views.channel.readStatus[channel.id]
-            .filter(rs => rs.last_viewed_at >= ownProps.post.create_at)
+        readStatus: state.views.channel.readStatus?.[channel.id]
+            ?.filter(rs => rs.last_viewed_at >= ownProps.post.create_at)
             .map(rs => getDisplayName(state, rs.user_id)),
         shouldShowDotMenu: PostUtils.shouldShowDotMenu(state, ownProps.post, channel),
         shortcutReactToLastPostEmittedFrom
