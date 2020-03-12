@@ -5,6 +5,7 @@ import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
 import {removePost} from 'mattermost-redux/actions/posts';
 import {isCurrentChannelReadOnly} from 'mattermost-redux/selectors/entities/channels';
+import {makeGetDisplayName} from 'mattermost-redux/selectors/entities/users';
 import {getCurrentTeamId} from 'mattermost-redux/selectors/entities/teams';
 import {get} from 'mattermost-redux/selectors/entities/preferences';
 import {getConfig} from 'mattermost-redux/selectors/entities/general';
@@ -25,6 +26,7 @@ function mapStateToProps(state, ownProps) {
     const enableEmojiPicker = config.EnableEmojiPicker === 'true' && !channelIsArchived;
     const teamId = getCurrentTeamId(state);
     const shortcutReactToLastPostEmittedFrom = getShortcutReactToLastPostEmittedFrom(state);
+    const getDisplayName = makeGetDisplayName();
 
     return {
         teamId,
@@ -33,6 +35,9 @@ function mapStateToProps(state, ownProps) {
         isCardOpen: selectedCard && selectedCard.id === ownProps.post.id,
         enableEmojiPicker,
         isReadOnly: isCurrentChannelReadOnly(state) || channelIsArchived,
+        readStatus: state.views.channel.readStatus[channel.id]
+            .filter(rs => rs.last_viewed_at >= ownProps.post.create_at)
+            .map(rs => getDisplayName(state, rs.user_id)),
         shouldShowDotMenu: PostUtils.shouldShowDotMenu(state, ownProps.post, channel),
         shortcutReactToLastPostEmittedFrom
     };

@@ -125,6 +125,27 @@ function keepChannelIdAsUnread(state = null, action) {
     }
 }
 
+function readStatus(state = {}, action) {
+    switch (action.type) {
+    case ActionTypes.RECEIVED_READ_STATUS_FOR_CHANNEL:
+        if (action.readStatus) {
+            return {
+                ...state,
+                [action.channelId]: action.readStatus,
+            };
+        } else if (action.user_id) {
+            return {
+                ...state,
+                [action.channelId]: state[action.channelId].map(
+                    i => i.user_id === action.user_id ? {...i, last_viewed_at:action.last_viewed_at} : i
+                )
+            };
+        }
+    default:
+        return state;
+    }
+}
+
 function lastGetPosts(state = {}, action) {
     switch (action.type) {
     case ActionTypes.RECEIVED_POSTS_FOR_CHANNEL_AT_TIME:
@@ -146,5 +167,6 @@ export default combineReducers({
     focusedPostId,
     mobileView,
     keepChannelIdAsUnread,
+    readStatus,
     lastGetPosts,
 });

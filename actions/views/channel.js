@@ -191,6 +191,16 @@ export function loadUnreads(channelId) {
     };
 }
 
+function processReadStatus(channelId, readStatus, dispatch) {
+    if (readStatus) {
+        dispatch({
+            type: ActionTypes.RECEIVED_READ_STATUS_FOR_CHANNEL,
+            channelId,
+            readStatus,
+        });
+    }
+}
+
 export function loadPostsAround(channelId, focusedPostId) {
     return async (dispatch) => {
         const {data, error} = await dispatch(PostActions.getPostsAround(channelId, focusedPostId, Posts.POST_CHUNK_SIZE / 2));
@@ -307,6 +317,7 @@ export function syncPostsInChannel(channelId, since) {
                 channelId,
                 time,
             });
+            processReadStatus(channelId, data.read_status, dispatch);
         }
         return {data, error};
     };

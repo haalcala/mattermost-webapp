@@ -109,6 +109,7 @@ export default class PostList extends React.PureComponent {
 
             markChannelAsRead: PropTypes.func.isRequired,
             updateNewMessagesAtInChannel: PropTypes.func.isRequired,
+            loadProfilesAndStatusesInChannel: PropTypes.func.isRequired,
 
         }).isRequired,
     }
@@ -116,6 +117,7 @@ export default class PostList extends React.PureComponent {
     constructor(props) {
         super(props);
         this.state = {
+            loadingReadStatus: props.isFirstLoad,
             loadingNewerPosts: false,
             loadingOlderPosts: false,
             autoRetryEnable: true,
@@ -155,6 +157,8 @@ export default class PostList extends React.PureComponent {
             await this.props.actions.loadPostsAround(channelId, this.props.focusedPostId);
         } else if (this.props.isFirstLoad) {
             await this.props.actions.loadUnreads(channelId);
+            await this.props.actions.syncPostsInChannel(channelId, 8640000000000000);
+            await this.props.actions.loadProfilesAndStatusesInChannel(channelId, 0, undefined, 'status'); // eslint-disable-line no-undefined
         } else if (this.props.latestPostTimeStamp) {
             await this.props.actions.syncPostsInChannel(channelId, this.props.latestPostTimeStamp, false);
         } else {
@@ -168,6 +172,7 @@ export default class PostList extends React.PureComponent {
         this.setState({
             loadingOlderPosts: false,
             loadingNewerPosts: false,
+            loadingReadStatus: false,
         });
     }
 
@@ -272,7 +277,7 @@ export default class PostList extends React.PureComponent {
     }
 
     render() {
-        if (!this.props.postListIds) {
+        if (!this.props.postListIds || this.state.loadingReadStatus) {
             return (
                 <LoadingScreen
                     position='absolute'

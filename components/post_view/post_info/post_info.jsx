@@ -4,7 +4,7 @@
 import PropTypes from 'prop-types';
 import React from 'react';
 import {FormattedMessage} from 'react-intl';
-import {Tooltip} from 'react-bootstrap';
+import {Modal, Tooltip} from 'react-bootstrap';
 
 import {Posts} from 'mattermost-redux/constants';
 import * as ReduxPostUtils from 'mattermost-redux/utils/post_utils';
@@ -121,6 +121,7 @@ export default class PostInfo extends React.PureComponent {
             emitShortcutReactToLastPostFrom: PropTypes.func
         }).isRequired,
 
+        readStatus: PropTypes.array,
         shouldShowDotMenu: PropTypes.bool.isRequired,
     };
 
@@ -129,7 +130,8 @@ export default class PostInfo extends React.PureComponent {
 
         this.state = {
             showEmojiPicker: false,
-            showOptionsMenuWithoutHover: false
+            showOptionsMenuWithoutHover: false,
+            showReadStatusModal: false
         };
 
         this.postHeaderRef = React.createRef();
@@ -280,6 +282,7 @@ export default class PostInfo extends React.PureComponent {
 
     render() {
         const post = this.props.post;
+        const readStatus = this.props.readStatus;
 
         const isEphemeral = Utils.isPostEphemeral(post);
         const isSystemMessage = PostUtils.isSystemMessage(post);
@@ -378,6 +381,14 @@ export default class PostInfo extends React.PureComponent {
             );
         }
 
+        const showReadStatusModal = () => {
+            this.setState({showReadStatusModal:true});
+        };
+
+        const hideReadStatusModal = () => {
+            this.setState({showReadStatusModal:false});
+        };
+
         return (
             <div
                 className='post__header--info'
@@ -385,9 +396,22 @@ export default class PostInfo extends React.PureComponent {
             >
                 <div className='col'>
                     {postTime}
+                    {this.props.showTimeWithoutHover &&
+                        <button className='read-status' onClick={showReadStatusModal}>{readStatus ? readStatus.length : 0} read</button>
+                    }
                     {pinnedBadge}
                     {postInfoIcon}
                     {postFlagIcon}
+                    {this.state.showReadStatusModal &&
+                        <Modal show={this.state.showReadStatusModal} onHide={hideReadStatusModal}>
+                        <Modal.Header closeButton>
+                            <Modal.Title>Post is Read by:</Modal.Title>
+                        </Modal.Header>
+                        <Modal.Body style={{'overflowY': 'auto'}}>
+                            <ol>{readStatus.map((dn,i) => <li key={i}>{dn}</li>)}</ol>
+                        </Modal.Body>
+                        </Modal>
+                    }
                     {visibleMessage}
                 </div>
                 {options}

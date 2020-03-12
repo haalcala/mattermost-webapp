@@ -177,6 +177,7 @@ export const ActionTypes = keyMirror({
     INCREMENT_WS_ERROR_COUNT: null,
     RESET_WS_ERROR_COUNT: null,
     RECEIVED_POSTS_FOR_CHANNEL_AT_TIME: null,
+    RECEIVED_READ_STATUS_FOR_CHANNEL: null,
     CHANNEL_POSTS_STATUS: null,
     CHANNEL_SYNC_STATUS: null,
     ALL_CHANNEL_SYNC_STATUS: null,
