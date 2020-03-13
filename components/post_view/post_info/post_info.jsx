@@ -118,7 +118,8 @@ export default class PostInfo extends React.PureComponent {
             /**
              * Function to set or unset emoji picker for last message
              */
-            emitShortcutReactToLastPostFrom: PropTypes.func
+            emitShortcutReactToLastPostFrom: PropTypes.func,
+            getMissingProfilesByIds: PropTypes.func,
         }).isRequired,
 
         readStatus: PropTypes.array,
@@ -381,13 +382,22 @@ export default class PostInfo extends React.PureComponent {
             );
         }
 
-        const showReadStatusModal = () => {
+        const showReadStatusModal = async () => {
+            await this.props.actions.getMissingProfilesByIds(readStatus.map(rs => rs.user_id))
             this.setState({showReadStatusModal:true});
         };
 
         const hideReadStatusModal = () => {
             this.setState({showReadStatusModal:false});
         };
+
+        const canShowReadStatus = () => {
+            if (post.root_id.length)
+                return this.props.isFirstReply;
+
+            return this.props.showTimeWithoutHover && readStatus
+                && !isEphemeral && !isSystemMessage
+        }
 
         return (
             <div
@@ -396,7 +406,7 @@ export default class PostInfo extends React.PureComponent {
             >
                 <div className='col'>
                     {postTime}
-                    {this.props.showTimeWithoutHover && readStatus &&
+                    {canShowReadStatus() &&
                         <button className='read-status' onClick={showReadStatusModal}>{readStatus.length} read</button>
                     }
                     {pinnedBadge}
@@ -408,7 +418,9 @@ export default class PostInfo extends React.PureComponent {
                             <Modal.Title>Post is Read by:</Modal.Title>
                         </Modal.Header>
                         <Modal.Body style={{'overflowY': 'auto'}}>
-                            <ol>{readStatus.map((dn,i) => <li key={i}>{dn}</li>)}</ol>
+                            <ol>
+                                {readStatus.map((rs,i) => <li key={i}>{rs.displayName}</li>)}
+                            </ol>
                         </Modal.Body>
                         </Modal>
                     }

@@ -10,7 +10,6 @@ import {markChannelAsRead, markChannelAsViewed} from 'mattermost-redux/actions/c
 import {makePreparePostIdsForPostList} from 'mattermost-redux/utils/post_list';
 
 import {updateNewMessagesAtInChannel} from 'actions/global_actions.jsx';
-import {loadProfilesAndStatusesInChannel} from 'actions/user_actions.jsx';
 import {getLatestPostId, makeCreateAriaLabelForPost} from 'utils/post_utils.jsx';
 import {
     checkAndSetMobileView,
@@ -89,7 +88,6 @@ function mapDispatchToProps(dispatch) {
             loadPosts,
             loadLatestPosts,
             loadPostsAround,
-            loadProfilesAndStatusesInChannel,
             checkAndSetMobileView,
             syncPostsInChannel,
             markChannelAsViewed,

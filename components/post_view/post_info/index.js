@@ -4,6 +4,7 @@
 import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
 import {removePost} from 'mattermost-redux/actions/posts';
+import {getMissingProfilesByIds} from 'mattermost-redux/actions/users';
 import {isCurrentChannelReadOnly} from 'mattermost-redux/selectors/entities/channels';
 import {makeGetDisplayName} from 'mattermost-redux/selectors/entities/users';
 import {getCurrentTeamId} from 'mattermost-redux/selectors/entities/teams';
@@ -37,7 +38,7 @@ function mapStateToProps(state, ownProps) {
         isReadOnly: isCurrentChannelReadOnly(state) || channelIsArchived,
         readStatus: state.views.channel.readStatus?.[channel.id]
             ?.filter(rs => rs.last_viewed_at >= ownProps.post.create_at)
-            .map(rs => getDisplayName(state, rs.user_id)),
+            .map(rs => ({user_id:rs.user_id, displayName:getDisplayName(state, rs.user_id)})),
         shouldShowDotMenu: PostUtils.shouldShowDotMenu(state, ownProps.post, channel),
         shortcutReactToLastPostEmittedFrom
     };
@@ -48,6 +49,7 @@ function mapDispatchToProps(dispatch) {
         actions: bindActionCreators({
             removePost,
             emitShortcutReactToLastPostFrom,
+            getMissingProfilesByIds,
         }, dispatch),
     };
 }

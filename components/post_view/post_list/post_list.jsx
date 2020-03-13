@@ -109,7 +109,6 @@ export default class PostList extends React.PureComponent {
 
             markChannelAsRead: PropTypes.func.isRequired,
             updateNewMessagesAtInChannel: PropTypes.func.isRequired,
-            loadProfilesAndStatusesInChannel: PropTypes.func,
 
         }).isRequired,
     }
@@ -159,7 +158,6 @@ export default class PostList extends React.PureComponent {
             await this.props.actions.loadUnreads(channelId);
             if (this.state.loadingReadStatus) {
                 await this.props.actions.syncPostsInChannel(channelId, 8640000000000000);
-                await this.props.actions.loadProfilesAndStatusesInChannel(channelId, 0, undefined, 'status'); // eslint-disable-line no-undefined
             }
         } else if (this.props.latestPostTimeStamp) {
             await this.props.actions.syncPostsInChannel(channelId, this.props.latestPostTimeStamp, false);
