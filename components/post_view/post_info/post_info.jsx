@@ -392,7 +392,7 @@ export default class PostInfo extends React.PureComponent {
         };
 
         const canShowReadStatus = () => {
-            if (post.root_id.length)
+            if (post.root_id?.length)
                 return this.props.isFirstReply;
 
             return this.props.showTimeWithoutHover && readStatus
