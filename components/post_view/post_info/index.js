@@ -37,8 +37,8 @@ function mapStateToProps(state, ownProps) {
         enableEmojiPicker,
         isReadOnly: isCurrentChannelReadOnly(state) || channelIsArchived,
         readStatus: state.views.channel.readStatus?.[channel.id]
-            ?.filter(rs => rs.last_viewed_at >= ownProps.post.create_at)
-            .map(rs => ({user_id:rs.user_id, displayName:getDisplayName(state, rs.user_id)})),
+            ?.filter((rs) => rs.last_viewed_at >= ownProps.post.create_at && rs.user_id !== ownProps.post.user_id)
+            .map((rs) => ({user_id: rs.user_id, displayName: getDisplayName(state, rs.user_id)})),
         shouldShowDotMenu: PostUtils.shouldShowDotMenu(state, ownProps.post, channel),
         shortcutReactToLastPostEmittedFrom
     };

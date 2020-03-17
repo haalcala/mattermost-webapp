@@ -383,21 +383,24 @@ export default class PostInfo extends React.PureComponent {
         }
 
         const showReadStatusModal = async () => {
-            await this.props.actions.getMissingProfilesByIds(readStatus.map(rs => rs.user_id))
-            this.setState({showReadStatusModal:true});
+            await this.props.actions.getMissingProfilesByIds(readStatus.map((rs) => rs.user_id));
+            this.setState({showReadStatusModal: true});
         };
 
         const hideReadStatusModal = () => {
-            this.setState({showReadStatusModal:false});
+            this.setState({showReadStatusModal: false});
         };
 
         const canShowReadStatus = () => {
-            if (post.root_id?.length)
+            if (!readStatus || readStatus.length <= 0) {
+                return false;
+            }
+            if (post.root_id?.length) {
                 return this.props.isFirstReply;
-
-            return this.props.showTimeWithoutHover && readStatus
-                && !isEphemeral && !isSystemMessage
-        }
+            }
+            return this.props.showTimeWithoutHover &&
+                !isEphemeral && !isSystemMessage;
+        };
 
         return (
             <div
@@ -407,21 +410,29 @@ export default class PostInfo extends React.PureComponent {
                 <div className='col'>
                     {postTime}
                     {canShowReadStatus() &&
-                        <button className='read-status' onClick={showReadStatusModal}>{readStatus.length} read</button>
+                        <button
+                            className='read-status'
+                            onClick={showReadStatusModal}
+                        >
+                            {readStatus.length + ' read'}
+                        </button>
                     }
                     {pinnedBadge}
                     {postInfoIcon}
                     {postFlagIcon}
                     {this.state.showReadStatusModal &&
-                        <Modal show={this.state.showReadStatusModal} onHide={hideReadStatusModal}>
-                        <Modal.Header closeButton>
-                            <Modal.Title>Post is Read by:</Modal.Title>
-                        </Modal.Header>
-                        <Modal.Body style={{'overflowY': 'auto'}}>
-                            <ol>
-                                {readStatus.map((rs,i) => <li key={i}>{rs.displayName}</li>)}
-                            </ol>
-                        </Modal.Body>
+                        <Modal
+                            show={this.state.showReadStatusModal}
+                            onHide={hideReadStatusModal}
+                        >
+                            <Modal.Header closeButton={true}>
+                                <Modal.Title>{'Post is Read by:'}</Modal.Title>
+                            </Modal.Header>
+                            <Modal.Body style={{overflowY: 'auto'}}>
+                                <ol>
+                                    {readStatus.map((rs, i) => <li key={i}>{rs.displayName}</li>)}
+                                </ol>
+                            </Modal.Body>
                         </Modal>
                     }
                     {visibleMessage}

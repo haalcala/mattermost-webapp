@@ -964,14 +964,15 @@ function handleReactionRemovedEvent(msg) {
 
 function handleChannelViewedEvent(msg) {
     const currentChannelId = getCurrentChannelId(getState());
+
     // Useful for when multiple devices have the app open to different channels
-    if ((!window.isActive ||  currentChannelId!== msg.data.channel_id) &&
+    if ((!window.isActive || currentChannelId !== msg.data.channel_id) &&
         getCurrentUserId(getState()) === msg.broadcast.user_id) {
         dispatch(markChannelAsRead(msg.data.channel_id, '', false));
     }
     if (msg.data.user_id && currentChannelId === msg.data.channel_id) {
         store.dispatch({
-            type: ActionTypes.RECEIVED_READ_STATUS_FOR_CHANNEL, 
+            type: ActionTypes.RECEIVED_READ_STATUS_FOR_CHANNEL,
             channelId: currentChannelId,
             user_id: msg.data.user_id,
             last_viewed_at: new Date().getTime(),

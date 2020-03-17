@@ -137,10 +137,11 @@ function readStatus(state = {}, action) {
             return {
                 ...state,
                 [action.channelId]: state[action.channelId].map(
-                    i => i.user_id === action.user_id ? {...i, last_viewed_at:action.last_viewed_at} : i
+                    (i) => (i.user_id === action.user_id ? {...i, last_viewed_at: action.last_viewed_at} : i)
                 )
             };
         }
+        return state;
     default:
         return state;
     }
