@@ -19,6 +19,8 @@ export default class MessageAttachmentList extends React.PureComponent {
          */
         attachments: PropTypes.array.isRequired,
 
+        columnwidth: PropTypes.number,
+
         /**
          * Options specific to text formatting
          */
@@ -40,6 +42,7 @@ export default class MessageAttachmentList extends React.PureComponent {
             content.push(
                 <MessageAttachment
                     attachment={attachment}
+                    columnwidth={this.props.columnwidth}
                     postId={this.props.postId}
                     key={'att_' + i}
                     options={this.props.options}

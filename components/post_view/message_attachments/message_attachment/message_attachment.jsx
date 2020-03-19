@@ -31,6 +31,8 @@ export default class MessageAttachment extends React.PureComponent {
          */
         attachment: PropTypes.object.isRequired,
 
+        columnwidth: PropTypes.number,
+
         /**
          * Options specific to text formatting
          */
@@ -245,7 +247,7 @@ export default class MessageAttachment extends React.PureComponent {
     handleFormattedTextClick = (e) => Utils.handleFormattedTextClick(e, this.props.currentRelativeTeamUrl);
 
     render() {
-        const {attachment, options} = this.props;
+        const {attachment, columnwidth, options} = this.props;
         let preTextClass = '';
 
         let preText;
@@ -439,6 +441,7 @@ export default class MessageAttachment extends React.PureComponent {
             <div
                 className={'attachment ' + preTextClass}
                 ref='attachment'
+                style={columnwidth ? {float: 'left'} : {}}
             >
                 {preText}
                 <div className='attachment__content'>

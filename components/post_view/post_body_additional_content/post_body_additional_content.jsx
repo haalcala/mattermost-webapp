@@ -98,6 +98,7 @@ export default class PostBodyAdditionalContent extends React.PureComponent {
             return (
                 <MessageAttachmentList
                     attachments={attachments}
+                    columnwidth={this.props.post?.props?.columnwidth}
                     postId={this.props.post.id}
                     options={this.props.options}
                     imagesMetadata={this.props.post.metadata.images}
