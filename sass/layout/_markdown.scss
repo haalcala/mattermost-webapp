@@ -71,7 +71,7 @@ h6 {
         &.post--system {
             .markdown-inline-img {
                 max-width: 200px;
-                width: auto;
+                object-fit: contain;
             }
         }
     }

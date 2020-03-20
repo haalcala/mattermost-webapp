@@ -447,7 +447,7 @@ export default class MessageAttachment extends React.PureComponent {
                 <div className='attachment__content'>
                     <div
                         className={useBorderStyle ? 'clearfix attachment__container' : 'clearfix attachment__container attachment__container--' + attachment.color}
-                        style={useBorderStyle}
+                        style={useBorderStyle, columnwidth ? {width: columnwidth} : {}}
                     >
                         {author}
                         {title}
