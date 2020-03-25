@@ -414,7 +414,13 @@ export default class PostInfo extends React.PureComponent {
                             className='read-status'
                             onClick={showReadStatusModal}
                         >
-                            {readStatus.length + ' read'}
+                            <FormattedMessage
+                                id='post_info.read'
+                                defaultMessage='{numberRead} read'
+                                values={{
+                                    numberRead: readStatus.length,
+                                }}
+                            />
                         </button>
                     }
                     {pinnedBadge}
@@ -426,7 +432,7 @@ export default class PostInfo extends React.PureComponent {
                             onHide={hideReadStatusModal}
                         >
                             <Modal.Header closeButton={true}>
-                                <Modal.Title>{'Post is Read by:'}</Modal.Title>
+                                <Modal.Title>{Utils.localizeMessage('post_info.read_by', 'Post is read by:')}</Modal.Title>
                             </Modal.Header>
                             <Modal.Body style={{overflowY: 'auto'}}>
                                 <ol>

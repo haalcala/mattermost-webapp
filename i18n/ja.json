@@ -2463,6 +2463,8 @@
   "post_info.permalink": "パーマリンク",
   "post_info.pin": "チャンネルにピン留めする",
   "post_info.pinned": "ピン留め",
+  "post_info.read": "既読 {numberRead}",
+  "post_info.read_by": "この投稿を読んだユーザー",
   "post_info.reply": "返信する",
   "post_info.system": "システム",
   "post_info.tooltip.add_reactions": "リアクションを追加する",
