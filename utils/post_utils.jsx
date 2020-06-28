@@ -10,7 +10,9 @@ import {get} from 'mattermost-redux/selectors/entities/preferences';
 import {makeGetDisplayName, getCurrentUserId} from 'mattermost-redux/selectors/entities/users';
 import {Permissions, Posts} from 'mattermost-redux/constants';
 import * as PostListUtils from 'mattermost-redux/utils/post_list';
-import {canEditPost as canEditPostRedux} from 'mattermost-redux/utils/post_utils';
+import {canEditPost as canEditPostRedux, isPostEphemeral} from 'mattermost-redux/utils/post_utils';
+
+import {allAtMentions} from 'utils/text_formatting';
 
 import {getEmojiMap} from 'selectors/emojis';
 
@@ -114,13 +116,27 @@ export function containsAtChannel(text, options = {}) {
         return false;
     }
 
-    const mentionableText = formatWithRenderer(text, new MentionableRenderer());
+    let mentionsRegex;
     if (options.checkAllMentions === true) {
-        return (/\B@(all|channel|here)\b/i).test(mentionableText);
+        mentionsRegex = new RegExp(Constants.SPECIAL_MENTIONS_REGEX);
+    } else {
+        mentionsRegex = new RegExp(Constants.ALL_MEMBERS_MENTIONS_REGEX);
     }
 
-    return (/\B@(all|channel)\b/i).test(mentionableText);
+    const mentionableText = formatWithRenderer(text, new MentionableRenderer());
+    return mentionsRegex.test(mentionableText);
 }
+
+export const groupsMentionedInText = (text, groups) => {
+    // Don't warn for slash commands
+    if (!text || text.startsWith('/')) {
+        return [];
+    }
+
+    const mentionableText = formatWithRenderer(text, new MentionableRenderer());
+    const mentions = allAtMentions(mentionableText);
+    return (mentions.length > 0 && mentions.map((mention) => groups && groups.get(mention)).filter((trueVal) => trueVal)) || [];
+};
 
 export function shouldFocusMainTextbox(e, activeElement) {
     if (!e) {
@@ -349,7 +365,7 @@ export function createAriaLabelForPost(post, author, isFlagged, reactions, intl,
     if (post.root_id) {
         ariaLabel = formatMessage({
             id: 'post.ariaLabel.replyMessage',
-            defaultMessage: '{authorName} at {time} {date} wrote a reply, {message}',
+            defaultMessage: 'At {time} {date}, {authorName} replied, {message}',
         },
         {
             authorName: author,
@@ -360,7 +376,7 @@ export function createAriaLabelForPost(post, author, isFlagged, reactions, intl,
     } else {
         ariaLabel = formatMessage({
             id: 'post.ariaLabel.message',
-            defaultMessage: '{authorName} at {time} {date} wrote, {message}',
+            defaultMessage: 'At {time} {date}, {authorName} wrote, {message}',
         },
         {
             authorName: author,
@@ -453,5 +469,20 @@ export function splitMessageBasedOnCaretPosition(caretPosition, message) {
 export function getNewMessageIndex(postListIds) {
     return postListIds.findIndex(
         (item) => item.indexOf(PostListRowListIds.START_OF_NEW_MESSAGES) === 0
+    );
+}
+
+export function makeGetReplyCount() {
+    return createSelector(
+        (state) => state.entities.posts.posts,
+        (state, post) => state.entities.posts.postsInThread[post.root_id || post.id],
+        (allPosts, postIds) => {
+            if (!postIds) {
+                return 0;
+            }
+
+            // Count the number of non-ephemeral posts in the thread
+            return postIds.map((id) => allPosts[id]).filter((post) => post && !isPostEphemeral(post)).length;
+        }
     );
 }

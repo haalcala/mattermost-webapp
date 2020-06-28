@@ -16,7 +16,7 @@ Cypress.Commands.add('toMainChannelView', (username = 'user-1', password) => {
     cy.apiLogin(username, password);
     cy.visit('/ad-1/channels/town-square');
 
-    cy.get('#post_textbox').should('be.visible');
+    cy.get('#post_textbox', {timeout: TIMEOUTS.HUGE}).should('be.visible');
 });
 
 Cypress.Commands.add('getSubpath', () => {
@@ -46,42 +46,11 @@ Cypress.Commands.add('getCurrentUserId', () => {
 // ***********************************************************
 
 // Go to Account Settings modal
-Cypress.Commands.add('toAccountSettingsModal', (username = 'user-1', isLoggedInAlready = false) => {
-    if (!isLoggedInAlready) {
-        cy.apiLogin(username);
-    }
-
-    cy.visit('/ad-1/channels/town-square');
+Cypress.Commands.add('toAccountSettingsModal', () => {
     cy.get('#channel_view').should('be.visible');
     cy.get('#sidebarHeaderDropdownButton').should('be.visible').click();
     cy.get('#accountSettings').should('be.visible').click();
     cy.get('#accountSettingsModal').should('be.visible');
-});
-
-// Go to Account Settings modal > Sidebar > Channel Switcher
-Cypress.Commands.add('toAccountSettingsModalChannelSwitcher', (username, setToOn = true) => {
-    cy.toAccountSettingsModal(username);
-
-    cy.get('#sidebarButton').should('be.visible');
-    cy.get('#sidebarButton').click();
-
-    let isOn;
-    cy.get('#channelSwitcherDesc').should((desc) => {
-        if (desc.length > 0) {
-            isOn = Cypress.$(desc[0]).text() === 'On';
-        }
-    });
-
-    cy.get('#channelSwitcherEdit').click();
-
-    if (isOn && !setToOn) {
-        cy.get('#channelSwitcherSectionOff').click();
-    } else if (!isOn && setToOn) {
-        cy.get('#channelSwitcherSectionEnabled').click();
-    }
-
-    cy.get('#saveSetting').click();
-    cy.get('#accountSettingsHeader > .close').click();
 });
 
 /**
@@ -91,7 +60,7 @@ Cypress.Commands.add('toAccountSettingsModalChannelSwitcher', (username, setToOn
 Cypress.Commands.add('changeMessageDisplaySetting', (setting = 'STANDARD') => {
     const SETTINGS = {STANDARD: '#message_displayFormatA', COMPACT: '#message_displayFormatB'};
 
-    cy.toAccountSettingsModal(null, true);
+    cy.toAccountSettingsModal();
     cy.get('#displayButton').click();
 
     cy.get('#displaySettingsTitle').should('be.visible').should('contain', 'Display Settings');
@@ -137,8 +106,11 @@ function isMac() {
 
 Cypress.Commands.add('postMessage', (message) => {
     cy.get('#post_textbox', {timeout: TIMEOUTS.LARGE}).clear().type(message).type('{enter}');
-    cy.wait(TIMEOUTS.TINY);
-    cy.get('#post_textbox').should('have.value', '');
+    cy.waitUntil(() => {
+        return cy.get('#post_textbox').then((el) => {
+            return el[0].textContent === '';
+        });
+    });
 });
 
 Cypress.Commands.add('postMessageReplyInRHS', (message) => {
@@ -220,11 +192,11 @@ Cypress.Commands.add('compareLastPostHTMLContentFromFile', (file, timeout = TIME
 function clickPostHeaderItem(postId, location, item) {
     if (postId) {
         cy.get(`#post_${postId}`).trigger('mouseover', {force: true});
-        cy.wait(TIMEOUTS.TINY).get(`#${location}_${item}_${postId}`).scrollIntoView().click({force: true});
+        cy.wait(TIMEOUTS.TINY).get(`#${location}_${item}_${postId}`).click({force: true});
     } else {
         cy.getLastPostId().then((lastPostId) => {
             cy.get(`#post_${lastPostId}`).trigger('mouseover', {force: true});
-            cy.wait(TIMEOUTS.TINY).get(`#${location}_${item}_${lastPostId}`).scrollIntoView().click({force: true});
+            cy.wait(TIMEOUTS.TINY).get(`#${location}_${item}_${lastPostId}`).click({force: true});
         });
     }
 }
@@ -414,11 +386,11 @@ Cypress.Commands.add('updateChannelHeader', (text) => {
 /**
  * On default "ad-1" team, create and visit a new channel
  */
-Cypress.Commands.add('createAndVisitNewChannel', () => {
+Cypress.Commands.add('createAndVisitNewChannel', (channelName = 'channel-test') => {
     cy.visit('/ad-1/channels/town-square');
 
     cy.getCurrentTeamId().then((teamId) => {
-        cy.apiCreateChannel(teamId, 'channel-test', 'Channel Test').then((res) => {
+        cy.apiCreateChannel(teamId, channelName, 'Channel Test').then((res) => {
             const channel = res.body;
 
             // # Visit the new channel
@@ -426,6 +398,58 @@ Cypress.Commands.add('createAndVisitNewChannel', () => {
 
             // * Verify channel's display name
             cy.get('#channelHeaderTitle').should('contain', channel.display_name);
+
+            cy.wrap(channel);
+        });
+    });
+});
+
+/**
+ * On default "ad-1" team, create and visit a new direct message between user-1 and the provided user
+ * @param {String} user - Username of user to open DM with
+ */
+Cypress.Commands.add('createAndVisitNewDirectMessageWith', (user) => {
+    cy.visit('/ad-1/channels/town-square');
+
+    cy.apiGetUsers(['user-1', user]).then((userResponse) => {
+        const userEmailArray = [userResponse.body[1].id, userResponse.body[0].id];
+
+        cy.apiCreateDirectChannel(userEmailArray).then((res) => {
+            const channel = res.body;
+
+            // # Visit the new channel
+            cy.visit(`/ad-1/channels/${channel.name}`);
+
+            // * Verify channel's display name
+            cy.get('#channelHeaderTitle').should('contain', channel.display_name);
+
+            cy.wrap(channel);
+        });
+    });
+});
+
+/**
+ * On default "ad-1" team, create and visit a new group message between user-1 and the provided users
+ * @param {Array} usernames - Array of usernames of the users to open GM with
+ */
+Cypress.Commands.add('createAndVisitNewGroupMessageWith', (usernames) => {
+    cy.visit('/ad-1/channels/town-square');
+
+    cy.apiGetUsers(usernames).then((userResponse) => {
+        const userEmailArray = userResponse.body.map((u) => u.id);
+
+        cy.apiCreateGroupChannel(userEmailArray).then((res) => {
+            const channel = res.body;
+
+            // # Visit the new channel
+            cy.visit(`/ad-1/channels/${channel.name}`);
+
+            // The display name does not contain the logged in user
+            const names = channel.display_name.split(', ');
+            names.splice(names.indexOf('user-1'), 1);
+
+            // * Verify channel's display name
+            cy.get('#channelHeaderTitle').should('contain', names.join(', '));
 
             cy.wrap(channel);
         });
@@ -475,30 +499,7 @@ Cypress.Commands.add('uploadFile', {prevSubject: true}, (targetInput, fileName, 
 /**
  * Navigate to system console-PluginManagement from account settings
  */
-Cypress.Commands.add('systemConsolePluginManagement', () => {
-    cy.get('#lhsHeader').should('be.visible').within(() => {
-        // # Click hamburger main menu
-        cy.get('#sidebarHeaderDropdownButton').click();
-
-        // * Dropdown menu should be visible
-        cy.get('.dropdown-menu').should('be.visible').within(() => {
-            // * Plugin Marketplace button should be visible then click
-            cy.get('#systemConsole').should('be.visible').click();
-        });
-    });
-
-    //Search for plugin management in filter container
-    cy.get('li.filter-container').find('input#adminSidebarFilter.filter').
-        wait(TIMEOUTS.TINY).should('be.visible').type('plugin Management').click();
-
-    cy.findByText('×').click();
-});
-
-/**
- * Navigate to system console-PluginManagement from account settings
- */
 Cypress.Commands.add('checkRunLDAPSync', () => {
-    cy.apiLogin('sysadmin');
     cy.apiGetLDAPSync().then((response) => {
         var jobs = response.body;
         var currentTime = new Date();

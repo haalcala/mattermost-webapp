@@ -21,6 +21,7 @@ const SyncGroupsToggle: React.SFC<Props> = (props: Props): JSX.Element => {
     const {isPublic, isSynced, isDefault, onToggle} = props;
     return (
         <LineSwitch
+            id='syncGroupSwitch'
             disabled={isDefault}
             toggled={isSynced}
             last={isSynced}
@@ -53,6 +54,7 @@ const AllowAllToggle: React.SFC<Props> = (props: Props): JSX.Element | null => {
     }
     return (
         <LineSwitch
+            id='allow-all-toggle'
             disabled={isDefault}
             toggled={isPublic}
             last={true}

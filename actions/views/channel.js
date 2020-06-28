@@ -38,6 +38,7 @@ import {browserHistory} from 'utils/browser_history';
 import {Constants, ActionTypes, EventTypes, PostRequestTypes} from 'utils/constants';
 import {isMobile} from 'utils/utils.jsx';
 import LocalStorageStore from 'stores/local_storage_store.jsx';
+import {isArchivedChannel} from 'utils/channel_utils';
 
 export function checkAndSetMobileView() {
     return (dispatch) => {
@@ -112,21 +113,27 @@ export function joinChannelById(channelId) {
 
 export function leaveChannel(channelId) {
     return async (dispatch, getState) => {
-        const state = getState();
+        let state = getState();
         const myPreferences = getMyPreferences(state);
         const currentUserId = getCurrentUserId(state);
         const currentTeam = getCurrentTeam(state);
+        const channel = getChannel(state, channelId);
 
         if (isFavoriteChannel(myPreferences, channelId)) {
             dispatch(unfavoriteChannel(channelId));
         }
 
         const teamUrl = getCurrentRelativeTeamUrl(state);
-        LocalStorageStore.removePreviousChannelName(currentUserId, currentTeam.id, state);
+
+        if (!isArchivedChannel(channel)) {
+            LocalStorageStore.removePreviousChannelName(currentUserId, currentTeam.id, state);
+        }
         const {error} = await dispatch(leaveChannelRedux(channelId));
         if (error) {
             return {error};
         }
+        state = getState();
+
         const prevChannelName = LocalStorageStore.getPreviousChannelName(currentUserId, currentTeam.id, state);
         const channelsInTeam = getChannelsNameMapInCurrentTeam(state);
         const prevChannel = getChannelByName(channelsInTeam, prevChannelName);
@@ -146,6 +153,20 @@ export function leaveChannel(channelId) {
         return {
             data: true,
         };
+    };
+}
+
+export function leaveDirectChannel(channelName) {
+    return async (dispatch, getState) => {
+        const state = getState();
+        const currentUserId = getCurrentUserId(state);
+        const currentTeam = getCurrentTeam(state);
+        const previousChannel = LocalStorageStore.getPreviousChannelName(currentUserId, currentTeam.id, state);
+        const penultimateChannel = LocalStorageStore.getPenultimateChannelName(currentUserId, currentTeam.id, state);
+
+        if (channelName === previousChannel || channelName === penultimateChannel) {
+            LocalStorageStore.removePreviousChannelName(currentUserId, currentTeam.id, state);
+        }
     };
 }
 
@@ -336,5 +357,14 @@ export function markChannelAsReadOnFocus(channelId) {
         }
 
         dispatch(markChannelAsRead(channelId));
+    };
+}
+
+export function updateToastStatus(status) {
+    return (dispatch) => {
+        dispatch({
+            type: ActionTypes.UPDATE_TOAST_STATUS,
+            data: status,
+        });
     };
 }

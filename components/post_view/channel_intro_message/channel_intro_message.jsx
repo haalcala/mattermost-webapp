@@ -37,6 +37,7 @@ export default class ChannelIntroMessage extends React.PureComponent {
         teamIsGroupConstrained: PropTypes.bool,
         creatorName: PropTypes.string.isRequired,
         teammate: PropTypes.object.isRequired,
+        teammateName: PropTypes.string,
     };
 
     render() {
@@ -51,6 +52,7 @@ export default class ChannelIntroMessage extends React.PureComponent {
             channelProfiles,
             teamIsGroupConstrained,
             teammate,
+            teammateName,
         } = this.props;
 
         let centeredIntro = '';
@@ -59,7 +61,7 @@ export default class ChannelIntroMessage extends React.PureComponent {
         }
 
         if (channel.type === Constants.DM_CHANNEL) {
-            return createDMIntroMessage(channel, centeredIntro, teammate);
+            return createDMIntroMessage(channel, centeredIntro, teammate, teammateName);
         } else if (channel.type === Constants.GM_CHANNEL) {
             return createGMIntroMessage(channel, centeredIntro, channelProfiles, currentUserId);
         } else if (channel.name === Constants.DEFAULT_CHANNEL) {
@@ -82,7 +84,7 @@ function createGMIntroMessage(channel, centeredIntro, profiles, currentUserId) {
             map((profile) => (
                 <ProfilePicture
                     key={'introprofilepicture' + profile.id}
-                    src={Utils.imageURLForUser(profile)}
+                    src={Utils.imageURLForUser(profile.id, profile.last_picture_update)}
                     size='xl'
                     userId={profile.id}
                     username={profile.username}
@@ -126,15 +128,9 @@ function createGMIntroMessage(channel, centeredIntro, profiles, currentUserId) {
     );
 }
 
-function createDMIntroMessage(channel, centeredIntro, teammate) {
+function createDMIntroMessage(channel, centeredIntro, teammate, teammateName) {
     const channelIntroId = 'channelIntro';
-
     if (teammate) {
-        var teammateName = teammate.username;
-        if (teammate.nickname.length > 0) {
-            teammateName = teammate.nickname;
-        }
-
         return (
             <div
                 id={channelIntroId}
@@ -142,7 +138,7 @@ function createDMIntroMessage(channel, centeredIntro, teammate) {
             >
                 <div className='post-profile-img__container channel-intro-img'>
                     <ProfilePicture
-                        src={Utils.imageURLForUser(teammate)}
+                        src={Utils.imageURLForUser(teammate.id, teammate.last_picture_update)}
                         size='xl'
                         userId={teammate.id}
                         username={teammate.username}

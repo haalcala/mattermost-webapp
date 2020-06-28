@@ -23,6 +23,7 @@ import './invitation_modal_members_step.scss';
 class InvitationModalMembersStep extends React.Component {
     static propTypes = {
         teamName: PropTypes.string.isRequired,
+        currentTeamId: PropTypes.string.isRequired,
         intl: PropTypes.any,
         inviteId: PropTypes.string.isRequired,
         searchProfiles: PropTypes.func.isRequired,

@@ -21,9 +21,14 @@ jest.mock('utils/browser_history', () => ({
     },
 }));
 
-jest.mock('utils/channel_utils.jsx', () => ({
-    getRedirectChannelNameForTeam: () => 'town-square',
-}));
+jest.mock('utils/channel_utils.jsx', () => {
+    const original = jest.requireActual('utils/channel_utils.jsx');
+
+    return {
+        ...original,
+        getRedirectChannelNameForTeam: () => 'town-square',
+    };
+});
 
 jest.mock('actions/channel_actions.jsx', () => ({
     openDirectChannelToUserId: jest.fn(() => ({type: ''})),
@@ -517,6 +522,17 @@ describe('channel view actions', () => {
             await store.dispatch(Actions.markChannelAsReadOnFocus(channel1.id));
 
             expect(markChannelAsRead).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('updateToastStatus', () => {
+        test('should disptach updateToastStatus action with the true as argument', async () => {
+            await store.dispatch(Actions.updateToastStatus(true));
+
+            expect(store.getActions()).toEqual([{
+                data: true,
+                type: 'UPDATE_TOAST_STATUS'
+            }]);
         });
     });
 });

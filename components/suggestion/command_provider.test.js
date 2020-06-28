@@ -12,6 +12,7 @@ describe('CommandSuggestion', () => {
             suggestion: '/invite',
             hint: '@[username] ~[channel]',
             description: 'Invite a user to a channel',
+            iconData: '',
         },
         isSelection: true,
         term: '/',
@@ -24,7 +25,7 @@ describe('CommandSuggestion', () => {
         );
 
         expect(wrapper).toMatchSnapshot();
-        expect(wrapper.find('.command__title').first().text()).toEqual('/invite @[username] ~[channel]');
-        expect(wrapper.find('.command__desc').first().text()).toEqual('Invite a user to a channel');
+        expect(wrapper.find('.slash-command__title').first().text()).toEqual('invite @[username] ~[channel]');
+        expect(wrapper.find('.slash-command__desc').first().text()).toEqual('Invite a user to a channel');
     });
 });

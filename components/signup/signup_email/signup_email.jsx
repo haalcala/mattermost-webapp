@@ -122,7 +122,11 @@ export default class SignupEmail extends React.Component {
         this.props.actions.loginById(data.id, user.password, '').then(({error}) => {
             if (error) {
                 if (error.server_error_id === 'api.user.login.not_verified.app_error') {
-                    browserHistory.push('/should_verify_email?email=' + encodeURIComponent(user.email) + '&teamname=' + encodeURIComponent(this.state.teamName));
+                    let verifyUrl = '/should_verify_email?email=' + encodeURIComponent(user.email);
+                    if (this.state.teamName) {
+                        verifyUrl += '&teamname=' + encodeURIComponent(this.state.teamName);
+                    }
+                    browserHistory.push(verifyUrl);
                 } else {
                     this.setState({
                         serverError: error.message,
@@ -223,6 +227,7 @@ export default class SignupEmail extends React.Component {
 
     handleSubmit = (e) => {
         e.preventDefault();
+        trackEvent('signup_email', 'click_create_account');
 
         // bail out if a submission is already in progress
         if (this.state.isSubmitting) {
@@ -476,7 +481,7 @@ export default class SignupEmail extends React.Component {
 
         return (
             <div>
-                {hasAccounts && <BackButton/>}
+                {hasAccounts && <BackButton onClick={() => trackEvent('signup_email', 'click_back')}/>}
                 <div
                     id='signup_email_section'
                     className='col-sm-12'
@@ -512,6 +517,7 @@ export default class SignupEmail extends React.Component {
                             <Link
                                 id='signin_account_link'
                                 to={'/login' + location.search}
+                                onClick={() => trackEvent('signup_email', 'click_signin_account')}
                             >
                                 <FormattedMessage
                                     id='signup_user_completed.signIn'
